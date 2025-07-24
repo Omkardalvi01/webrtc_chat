@@ -5,19 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
-
+	"github.com/p2p_webrtc_chat/Utils"
 	"github.com/pion/webrtc/v3"
 )
 
 func main() {
-	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
-		ICEServers: []webrtc.ICEServer{
-			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
-			},
-		},
-	})
+	peerConnection, err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil {
 		log.Fatal("Error while creating peerconnection ", err)
 	}
@@ -41,20 +34,32 @@ func main() {
 		})
 	})
 
-	fmt.Println("Put SDP for remote server below")
-	offer, err := bufio.NewReader(os.Stdin).ReadString('#')
+
+	fmt.Println("Put the id below:")
+	uid, err := bufio.NewReader(os.Stdin).ReadString('\n')
 	if err != nil {
 		log.Fatal("Error at reading input ", err)
 	}
 
-	offerstr := strings.TrimSpace(offer)
+
+	conn , err := utils.Send_uid(uid[:len(uid)-1])
+	if err != nil{
+		log.Fatal("Error with creating connection", err)
+	}
+	
+
+	offer, err := utils.Recieve(conn)
+	if err != nil{
+		log.Fatal("Error with recieving offer", err)
+	}
+
 	offerSDP := webrtc.SessionDescription{
-		SDP:  offerstr,
+		SDP:  offer,
 		Type: webrtc.SDPTypeOffer,
 	}
 
 	fmt.Println("Offer recieved:")
-	fmt.Println(offerSDP.Type)
+	fmt.Println(offerSDP.SDP)
 
 	err = peerConnection.SetRemoteDescription(offerSDP)
 	if err != nil {
@@ -69,9 +74,16 @@ func main() {
 	if err := peerConnection.SetLocalDescription(ans); err != nil {
 		log.Fatal("Error while setting local desciption ", err)
 	}
+	
 	gathercomplete := webrtc.GatheringCompletePromise(peerConnection)
 	<-gathercomplete
+	
+	err = utils.Send(conn, peerConnection.LocalDescription().SDP)
+	if err != nil{
+		log.Fatal("Error while sending answer", err)
+	}
 	fmt.Printf("Local SDP:\n%v", peerConnection.LocalDescription().SDP)
 
+	conn.Close()
 	select {}
 }

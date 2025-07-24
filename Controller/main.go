@@ -5,21 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
-
+	"github.com/google/uuid"
+	"github.com/p2p_webrtc_chat/Utils"
 	"github.com/pion/webrtc/v3"
 )
 
 func main(){
-	webconfig := webrtc.Configuration{
-		ICEServers: []webrtc.ICEServer{
-			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
-			},
-		},
-	}
-	
-	peerConnection , err := webrtc.NewPeerConnection(webconfig)
+
+	peerConnection , err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil{
 		log.Fatal("Error while creating new connection",err)
 	}
@@ -41,7 +34,7 @@ func main(){
 		
 	})
 	dc.OnMessage(func(msg webrtc.DataChannelMessage) {
-		fmt.Printf("Peer: %s\n", string(msg.Data))
+		fmt.Printf("Peer: %s", string(msg.Data))
 	})
 
 	offer , err := peerConnection.CreateOffer(nil)
@@ -56,17 +49,23 @@ func main(){
 	gathercomplete := webrtc.GatheringCompletePromise(peerConnection)
 	<-gathercomplete
 
-	fmt.Printf("Local SDP:\n%v", peerConnection.LocalDescription().SDP)
+	uid := uuid.New().URN()
+	fmt.Println("Copy paste to peer:")
+	fmt.Println(uid)
 
-	fmt.Println("Enter the remote SDP address below")
-	ansSDP , err := bufio.NewReader(os.Stdin).ReadString('#')
-	if err != nil {
-		log.Fatal("Error while reading ",err)
+
+	conn , err := utils.Send_uid(uid)
+	if err != nil{
+		log.Fatal("Error at creating connection to server",err)
 	}
 
-	ansSDP_str := strings.TrimSpace(string(ansSDP))
+	ans , err := utils.Send_and_recieve(conn , peerConnection.LocalDescription().SDP)
+	if err != nil{
+		log.Fatal("Error at send and recieve to controlled",err)
+	}
+
 	answer := webrtc.SessionDescription{
-		SDP: ansSDP_str,
+		SDP: ans,
 		Type: webrtc.SDPTypeAnswer,
 	}
 
@@ -74,5 +73,6 @@ func main(){
 		log.Fatal("Error while setting remote description ",err)
 	}
 
+	conn.Close()
 	select{}
 }

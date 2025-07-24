@@ -32,10 +32,12 @@ func exchangeSDP(conn *websocket.Conn){
 	comms_channel := Peer[conn_id]
 	
 	if comms_channel == nil{
+		fmt.Println("Creating new chat")
 		comms_channel = make(chan string)
 		Peer[conn_id] = comms_channel
 	}
 
+	
 	select{
 	case offer := <-comms_channel:
 		err := conn.WriteMessage(websocket.TextMessage, []byte(offer))
@@ -70,7 +72,6 @@ func exchangeSDP(conn *websocket.Conn){
 		}
 		fmt.Println("Recieved answer from peerB", string(answer))
 	}
-	
 }
 
 func wshandler(w http.ResponseWriter, r *http.Request){
