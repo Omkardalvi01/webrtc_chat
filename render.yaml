@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: go-websocket-app
-    env: go
-    plan: free
-    buildCommand: cd Server && go build -o main .
-    startCommand: ./Server/main
-    autoDeploy: true

@@ -11,7 +11,7 @@ func Send_uid(uid string) (*websocket.Conn, error){
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5 * time.Second))
 	defer cancel()
 	
-	conn, _ , err := websocket.DefaultDialer.DialContext(ctx, "ws://localhost:8080/" , nil)
+	conn, _ , err := websocket.DefaultDialer.DialContext(ctx, "wss://sdp-server-poak.onrender.com/" , nil)
 	if err != nil{
 		return nil , err
 	}

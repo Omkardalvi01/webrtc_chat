@@ -11,6 +11,9 @@ import (
 )
 
 func main(){
+	os_reader := bufio.NewReader(os.Stdin)
+	peer_with_escape , _ := os_reader.ReadString('\n')
+	peer :=  peer_with_escape[:len(peer_with_escape)-1]
 
 	peerConnection , err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil{
@@ -34,7 +37,7 @@ func main(){
 		
 	})
 	dc.OnMessage(func(msg webrtc.DataChannelMessage) {
-		fmt.Printf("Peer: %s", string(msg.Data))
+		fmt.Printf("%s: %s", peer ,string(msg.Data))
 	})
 
 	offer , err := peerConnection.CreateOffer(nil)

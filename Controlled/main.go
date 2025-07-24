@@ -10,6 +10,10 @@ import (
 )
 
 func main() {
+	os_reader := bufio.NewReader(os.Stdin)
+	peer_with_escape , _ := os_reader.ReadString('\n')
+	peer :=  peer_with_escape[:len(peer_with_escape)-1]
+
 	peerConnection, err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil {
 		log.Fatal("Error while creating peerconnection ", err)
@@ -23,20 +27,20 @@ func main() {
 
 			go func() {
 				for {
-					msg, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+					msg, _ := os_reader.ReadString('\n')
 					dc.SendText(msg)
 				}
 			}()
 		})
 
 		dc.OnMessage(func(msg webrtc.DataChannelMessage) {
-			fmt.Printf("Peer:%v", string(msg.Data))
+			fmt.Printf("%s:%v",peer, string(msg.Data))
 		})
 	})
 
 
 	fmt.Println("Put the id below:")
-	uid, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	uid, err := os_reader.ReadString('\n')
 	if err != nil {
 		log.Fatal("Error at reading input ", err)
 	}
