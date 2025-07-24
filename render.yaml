@@ -1,11 +1,8 @@
 services:
   - type: web
-    name: websocket-server
-    runtime: go
+    name: go-websocket-app
+    env: go
     plan: free
-    region: oregon
-    buildCommand: go build -o server ./server
-    startCommand: ./server
-    envVars:
-      - key: PORT
-        value: 10000
+    buildCommand: cd Server && go build -o main .
+    startCommand: ./Server/main
+    autoDeploy: true
