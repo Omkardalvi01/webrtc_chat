@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: websocket-server
+    runtime: go
+    plan: free
+    region: oregon
+    buildCommand: go build -o server ./server
+    startCommand: ./server
+    envVars:
+      - key: PORT
+        value: 10000
