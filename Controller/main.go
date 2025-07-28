@@ -11,9 +11,10 @@ import (
 )
 
 func main(){
+	fmt.Println("Enter Username")
 	os_reader := bufio.NewReader(os.Stdin)
-	peer_with_escape , _ := os_reader.ReadString('\n')
-	peer :=  peer_with_escape[:len(peer_with_escape)-1]
+	self , _ := os_reader.ReadString('\n')
+	self =  self[:len(self)-1]
 
 	peerConnection , err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil{
@@ -31,13 +32,14 @@ func main(){
 		go func(){
 			for{
 				msg , _ := bufio.NewReader(os.Stdin).ReadString('\n')
+				msg = fmt.Sprintf("[%s]:%s",self,msg)
 				dc.SendText(msg)
 			}
 		}()
 		
 	})
 	dc.OnMessage(func(msg webrtc.DataChannelMessage) {
-		fmt.Printf("%s: %s", peer ,string(msg.Data))
+		fmt.Printf("%s",string(msg.Data))
 	})
 
 	offer , err := peerConnection.CreateOffer(nil)

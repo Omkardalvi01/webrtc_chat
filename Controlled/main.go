@@ -10,9 +10,10 @@ import (
 )
 
 func main() {
+	fmt.Println("Enter Username")
 	os_reader := bufio.NewReader(os.Stdin)
-	peer_with_escape , _ := os_reader.ReadString('\n')
-	peer :=  peer_with_escape[:len(peer_with_escape)-1]
+	self , _ := os_reader.ReadString('\n')
+	self =  self[:len(self)-1]
 
 	peerConnection, err := webrtc.NewPeerConnection(utils.Webconfig)
 	if err != nil {
@@ -27,14 +28,15 @@ func main() {
 
 			go func() {
 				for {
-					msg, _ := os_reader.ReadString('\n')
+					msg , _ := bufio.NewReader(os.Stdin).ReadString('\n')
+					msg = fmt.Sprintf("[%s]:%s",self,msg)
 					dc.SendText(msg)
 				}
 			}()
 		})
 
 		dc.OnMessage(func(msg webrtc.DataChannelMessage) {
-			fmt.Printf("%s:%v",peer, string(msg.Data))
+			fmt.Printf("%s",string(msg.Data))
 		})
 	})
 
@@ -62,9 +64,6 @@ func main() {
 		Type: webrtc.SDPTypeOffer,
 	}
 
-	fmt.Println("Offer recieved:")
-	fmt.Println(offerSDP.SDP)
-
 	err = peerConnection.SetRemoteDescription(offerSDP)
 	if err != nil {
 		log.Fatal("Error while setting remote description ", err)
@@ -86,7 +85,6 @@ func main() {
 	if err != nil{
 		log.Fatal("Error while sending answer", err)
 	}
-	fmt.Printf("Local SDP:\n%v", peerConnection.LocalDescription().SDP)
 
 	conn.Close()
 	select {}
